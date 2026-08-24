@@ -3,14 +3,18 @@ import pandas as pd
 import sqlite3
 from groq import Groq
 
-# 1. API KEY YAHAN DAAL (UI se hat gaya hai)
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-
 # Minimalist, consulting-grade layout
 st.set_page_config(page_title="Text-to-SQL Copilot", layout="wide")
 
 st.title("Text-to-SQL Copilot")
 st.markdown("Upload your dataset and ask plain-English questions.")
+
+# Secure API Key loading
+try:
+    api_key = st.secrets["GROQ_API_KEY"]
+except KeyError:
+    st.error("API Key not found in Streamlit Secrets. Please configure it in the dashboard.")
+    st.stop()
 
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=['csv', 'xlsx'])
 
@@ -38,7 +42,7 @@ if uploaded_file is not None:
             if not question:
                 st.warning("Please type a question.")
             else:
-                client = Groq(api_key=GROQ_API_KEY)
+                client = Groq(api_key=api_key)
                 prompt = f"""
                 You are a senior data analyst. 
                 I have a SQLite table named '{table_name}'.
@@ -50,10 +54,10 @@ if uploaded_file is not None:
                 """
                 
                 with st.spinner("Generating query..."):
-                    # 2. NAYA MODEL (Jo abhi chal raha hai)
+                    # Using the most stable, standard Mixtral model
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.1-70b-versatile",
+                        model="mixtral-8x7b-32768",
                         temperature=0
                     )
                     
