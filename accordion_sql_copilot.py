@@ -53,7 +53,7 @@ if uploaded_file is not None:
                     # 2. NAYA MODEL (Jo abhi chal raha hai)
                     response = client.chat.completions.create(
                         messages=[{"role": "user", "content": prompt}],
-                        model="llama-3.3-70b-versatile",
+                        model="llama-3.1-70b-versatile",
                         temperature=0
                     )
                     
