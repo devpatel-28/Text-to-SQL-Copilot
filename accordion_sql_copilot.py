@@ -49,7 +49,7 @@ if uploaded_file is not None:
                 """
                 
                 with st.spinner("Generating query via Gemini..."):
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-pro')
                     response = model.generate_content(prompt)
                     
                     generated_sql = response.text.strip()
