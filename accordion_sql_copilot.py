@@ -2,18 +2,19 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import google.generativeai as genai
+import os
 
 st.set_page_config(page_title="Text-to-SQL Copilot", layout="wide")
 st.title("Text-to-SQL Copilot")
 st.markdown("Upload your dataset and ask plain-English questions.")
 
-# Secure API Key loading for Gemini
-try:
-    api_key = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=api_key)
-except KeyError:
-    st.error("API Key not found in Streamlit Secrets. Please configure GEMINI_API_KEY.")
+# FIXED: Using os.environ for Render instead of st.secrets
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    st.error("API Key not found in Environment Variables. Please check Render settings.")
     st.stop()
+
+genai.configure(api_key=api_key)
 
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=['csv', 'xlsx'])
 
@@ -49,7 +50,7 @@ if uploaded_file is not None:
                 """
                 
                 with st.spinner("Generating query via Gemini..."):
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-pro')
                     response = model.generate_content(prompt)
                     
                     generated_sql = response.text.strip()
