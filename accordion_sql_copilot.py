@@ -1,19 +1,18 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
-from groq import Groq
+import google.generativeai as genai
 
-# Minimalist, consulting-grade layout
 st.set_page_config(page_title="Text-to-SQL Copilot", layout="wide")
-
 st.title("Text-to-SQL Copilot")
 st.markdown("Upload your dataset and ask plain-English questions.")
 
-# Secure API Key loading
+# Secure API Key loading for Gemini
 try:
-    api_key = st.secrets["GROQ_API_KEY"]
+    api_key = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=api_key)
 except KeyError:
-    st.error("API Key not found in Streamlit Secrets. Please configure it in the dashboard.")
+    st.error("API Key not found in Streamlit Secrets. Please configure GEMINI_API_KEY.")
     st.stop()
 
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=['csv', 'xlsx'])
@@ -42,26 +41,18 @@ if uploaded_file is not None:
             if not question:
                 st.warning("Please type a question.")
             else:
-                client = Groq(api_key=api_key)
                 prompt = f"""
-                You are a senior data analyst. 
-                I have a SQLite table named '{table_name}'.
-                Here is the schema:
-                {schema}
-                
-                Write a valid SQLite query to answer this question: "{question}"
+                You are a senior data analyst. I have a SQLite table named '{table_name}'.
+                Schema: {schema}
+                Write a valid SQLite query to answer: "{question}"
                 Return ONLY the raw SQL code. No markdown formatting, no explanation, no quotes.
                 """
                 
-                with st.spinner("Generating query..."):
-                    # Using the most stable, standard Mixtral model
-                    response = client.chat.completions.create(
-                        messages=[{"role": "user", "content": prompt}],
-                        model="mixtral-8x7b-32768",
-                        temperature=0
-                    )
+                with st.spinner("Generating query via Gemini..."):
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content(prompt)
                     
-                    generated_sql = response.choices[0].message.content.strip()
+                    generated_sql = response.text.strip()
                     if generated_sql.startswith("```sql"): generated_sql = generated_sql[6:-3].strip()
                     elif generated_sql.startswith("```"): generated_sql = generated_sql[3:-3].strip()
                         
