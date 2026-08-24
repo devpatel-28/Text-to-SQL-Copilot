@@ -4,7 +4,7 @@ import sqlite3
 from groq import Groq
 
 # 1. API KEY YAHAN DAAL (UI se hat gaya hai)
-GROQ_API_KEY = "TERI_NAYI_API_KEY_YAHAN_DAAL"
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 
 # Minimalist, consulting-grade layout
 st.set_page_config(page_title="Text-to-SQL Copilot", layout="wide")
